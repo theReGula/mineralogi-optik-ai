@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Analisis Petrografi — Mineralogi Optik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0C0905;
+    --bg2:       #150F08;
+    --bg3:       #1E1610;
+    --bg4:       #261C14;
+    --border:    #3A2A1A;
+    --amber:     #C8922A;
+    --amber-dim: #7A5519;
+    --cream:     #EDE0C8;
+    --cream-dim: #A89070;
+    --rust:      #8B4B2A;
+    --green-xpl: #4A8C6A;
+    --font-disp: 'Playfair Display', Georgia, serif;
+    --font-body: 'EB Garamond', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0 24px;
+    position: relative;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .header-text {}
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: var(--font-disp);
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--cream);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--cream-dim);
+    font-style: italic;
+  }
+
+  .badge {
+    flex-shrink: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cream-dim);
+    line-height: 1.8;
+  }
+
+  .badge strong {
+    color: var(--amber);
+    display: block;
+    font-size: 12px;
+  }
+
+  /* ── API Key Panel ── */
+  .api-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 24px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .api-panel label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--cream-dim);
+    white-space: nowrap;
+  }
+
+  .api-panel input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-panel input:focus { border-color: var(--amber-dim); }
+
+  .api-panel input::placeholder { color: var(--cream-dim); opacity: 0.5; }
+
+  .api-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    color: var(--cream-dim);
+    white-space: nowrap;
+  }
+
+  .api-status.ready { color: var(--green-xpl); border-color: var(--green-xpl); }
+
+  /* ── Main grid ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    margin-top: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 720px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .header-inner { flex-direction: column; }
+    .badge { text-align: left; }
+  }
+
+  /* ── Sample Panel ── */
+  .sample-panel {
+    position: sticky;
+    top: 24px;
+  }
+
+  .panel-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+    margin-bottom: 10px;
+  }
+
+  .sample-img-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg3);
+  }
+
+  .sample-img-wrap img {
+    width: 100%;
+    display: block;
+    opacity: 0.92;
+    transition: opacity 0.3s;
+  }
+
+  .sample-img-wrap:hover img { opacity: 1; }
+
+  .img-caption {
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--cream-dim);
+    line-height: 1.5;
+  }
+
+  .img-caption span {
+    display: block;
+    color: var(--amber);
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  /* Feature tags */
+  .features {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .feature-item:hover {
+    border-color: var(--amber-dim);
+    background: var(--bg3);
+  }
+
+  .feature-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .feature-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .feature-desc { color: var(--cream-dim); font-size: 12px; }
+
+  /* Framework guide */
+  .framework {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .framework-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .framework-row:last-child { border-bottom: none; }
+
+  .fw-key {
+    font-family: var(--font-disp);
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--amber);
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-right: 1px solid var(--border);
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fw-val {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--cream-dim);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Chat Panel ── */
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 520px;
+  }
+
+  .chat-header {
+    padding: 14px 18px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .chat-header-title {
+    font-family: var(--font-disp);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--cream);
+  }
+
+  .model-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--amber-dim);
+    background: var(--bg4);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  .chat-messages {
+    flex: 1;
+    min-height: 380px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Empty state */
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    padding: 32px 20px;
+    opacity: 0.6;
+  }
+
+  .empty-state-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .empty-state p {
+    font-style: italic;
+    font-size: 15px;
+    color: var(--cream-dim);
+    max-width: 280px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Messages */
+  .msg {
+    display: flex;
+    gap: 12px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .msg.user .msg-avatar {
+    background: var(--rust);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .msg.ai .msg-avatar {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    font-size: 16px;
+  }
+
+  .msg-body { flex: 1; }
+
+  .msg-role {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 5px;
+  }
+
+  .msg.ai .msg-role { color: var(--amber-dim); }
+
+  .msg-text {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--cream);
+  }
+
+  .msg.user .msg-text {
+    background: var(--bg4);
+    border-radius: 8px 0 8px 8px;
+  }
+
+  .msg.ai .msg-text {
+    border-left: 2px solid var(--amber-dim);
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    align-items: center;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--amber-dim);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* Input area */
+  .chat-input-area {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-top: 1px solid var(--bg4);
+    border-radius: 0 0 8px 8px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .chat-input-area textarea {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    min-height: 44px;
+    max-height: 140px;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input-area textarea:focus { border-color: var(--amber-dim); }
+  .chat-input-area textarea::placeholder { color: var(--cream-dim); opacity: 0.4; font-style: italic; }
+
+  .send-btn {
+    background: var(--amber);
+    border: none;
+    border-radius: 6px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .send-btn:hover { background: #D9A030; }
+  .send-btn:active { transform: scale(0.96); }
+  .send-btn:disabled { background: var(--bg4); color: var(--cream-dim); cursor: not-allowed; }
+
+  .send-btn svg { width: 18px; height: 18px; }
+
+  /* Starter prompts */
+  .starters {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .starter-btn {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--cream-dim);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .starter-btn:hover { border-color: var(--amber-dim); color: var(--cream); }
+
+  /* Reset btn */
+  .reset-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cream-dim);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .reset-btn:hover { color: var(--rust); border-color: var(--rust); }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cream-dim);
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.6;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Error msg */
+  .error-msg {
+    background: #2A1010;
+    border: 1px solid #5A2020;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #E08080;
+    font-family: var(--font-mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="header-text">
+        <div class="eyebrow">Mineralogi Optik · Teknik Geologi · UNG</div>
+        <h1>Panduan Analisis Petrografi<br><em>Sayatan Tipis Batuan Vulkanik</em></h1>
+        <p class="subtitle">AI Socratic Guide — KNOW · SEE · READ</p>
+      </div>
+      <div class="badge">
+        <strong>Media Pembelajaran AI</strong>
+        Pelatihan PEKERTI 2026<br>
+        LPMPP · Universitas Negeri Gorontalo<br>
+        Berbasis TPACK Framework
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="api-panel">
+      <label for="apikey">🔑 Anthropic API Key</label>
+      <input type="password" id="apikey" placeholder="sk-ant-..." autocomplete="off">
+      <span class="api-status" id="api-status">Belum dikonfigurasi</span>
+    </div>
+  </header>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- Left: Sample + Framework -->
+    <aside class="sample-panel">
+      <div class="panel-label">Sampel Sayatan Tipis</div>
+      <div class="sample-img-wrap">
+        <img src="thin-section-xpl.jpg" alt="Sayatan tipis peperite di bawah XPL" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div style="display:none; height:200px; align-items:center; justify-content:center; color:var(--cream-dim); font-size:13px; font-style:italic;">Gambar tidak ditemukan.<br>Upload thin-section-xpl.jpg</div>
+        <div class="img-caption">
+          <span>XPL · Nikon D5000 · 300 dpi</span>
+          Peperite — Median Tectonic Line, Ehime, Japan
+        </div>
+      </div>
+
+      <div class="features" id="feature-list">
+        <div class="panel-label" style="margin-top:14px; margin-bottom:2px;">Fitur Utama untuk Diidentifikasi</div>
+
+        <div class="feature-item" onclick="insertFeature('Saya melihat mineral opak berbentuk kotak di tengah sayatan dengan garis internal.')">
+          <div class="feature-dot" style="background:#E06060"></div>
+          <div>
+            <span class="feature-name">1. Skeletal Opaque Mineral</span>
+            <span class="feature-desc">Magnetit/ilmenit dengan box texture — bukti kristalisasi cepat</span>
+          </div>
+        </div>
+
+        <div class="feature-item" onclick="insertFeature('Saya melihat mikrolith plagioklas dengan orientasi yang acak di seluruh groundmass.')">
+          <div class="feature-dot" style="background:#60B0E0"></div>
+          <div>
+            <span class="feature-name">2. Mikrolith Plagioklas</span>
+            <span class="feature-desc">Orientasi acak, birefringence rendah — hyalophitic texture</span>
+          </div>
+        </div>
+
+        <div class="feature-item" onclick="insertFeature('Saya melihat fragmen yang teksturnya berbeda dari groundmass di bagian kanan bawah.')">
+          <div class="feature-dot" style="background:#70D090"></div>
+          <div>
+            <span class="feature-name">3. Fragmen Sedimen</span>
+            <span class="feature-desc">Xenolith — kunci diagnosis interaksi magma-sedimen</span>
+          </div>
+        </div>
+
+        <div class="feature-item" onclick="insertFeature('Saya melihat groundmass yang sangat halus dengan campuran gelas dan mikrolith.')">
+          <div class="feature-dot" style="background:#D0B060"></div>
+          <div>
+            <span class="feature-name">4. Groundmass Vulkanik</span>
+            <span class="feature-desc">Gelas + mikrolith — rapid cooling signature</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Framework KNOW-SEE-READ -->
+      <div class="panel-label" style="margin-top:16px; margin-bottom:6px;">Framework Dialog</div>
+      <div class="framework">
+        <div class="framework-row">
+          <div class="fw-key">K</div>
+          <div class="fw-val">Apa yang kamu perkirakan secara teori sebelum melihat?</div>
+        </div>
+        <div class="framework-row">
+          <div class="fw-key">S</div>
+          <div class="fw-val">Apa yang benar-benar terlihat di XPL? Deskripsikan spesifik.</div>
+        </div>
+        <div class="framework-row">
+          <div class="fw-key">R</div>
+          <div class="fw-val">Apa implikasi petrogenesis dari observasi ini?</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Chat -->
+    <section class="chat-panel">
+      <div class="chat-header">
+        <span class="chat-header-title">Asisten Petrografi Socratik</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="model-tag">claude-sonnet-4-20250514</span>
+          <button class="reset-btn" onclick="resetChat()">reset</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="empty-state" id="empty-state">
+          <span class="empty-state-icon">🔬</span>
+          <p>Pilih salah satu fitur di sebelah kiri untuk memulai, atau ketik observasimu langsung.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea
+          id="user-input"
+          rows="1"
+          placeholder="Deskripsikan apa yang kamu lihat di sayatan tipis..."
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Kirim">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div class="starters" id="starters">
+        <button class="starter-btn" onclick="useStarter(this)">Saya ingin menganalisis mineral opak di tengah sayatan</button>
+        <button class="starter-btn" onclick="useStarter(this)">Saya belum tahu harus mulai dari mana</button>
+        <button class="starter-btn" onclick="useStarter(this)">Apa itu peperite dan mengapa sayatan ini istimewa?</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Media Pembelajaran AI · Mineralogi Optik · UNG 2026</span>
+    <span>PEKERTI — LPMPP UNG · Dibuat dengan Claude API</span>
+  </footer>
+
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let messages = [];
+  let isLoading = false;
+
+  const SYSTEM_PROMPT = `Kamu adalah asisten petrografi untuk mahasiswa Teknik Geologi tingkat 2 di Universitas Negeri Gorontalo. Peranmu bukan memberikan jawaban langsung — peranmu adalah mengajukan pertanyaan yang membantu mahasiswa membangun interpretasi sendiri dari observasi mereka.
+
+Ikuti framework KNOW-SEE-READ:
+- KNOW: tanyakan dulu apa yang mahasiswa perkirakan secara teori sebelum mengamati
+- SEE: minta mereka mendeskripsikan secara spesifik apa yang mereka lihat di XPL (warna interferensi, bentuk, ukuran, hubungan antar mineral)
+- READ: bantu mereka menarik implikasi petrogenesis dari observasi tersebut
+
+Aturan penting:
+1. Jangan pernah memberikan kesimpulan langsung. Selalu akhiri dengan pertanyaan.
+2. Jika mahasiswa menjawab terlalu umum atau kabur, minta mereka lebih spesifik: "Bisa kamu deskripsikan lebih detail? Misalnya warna interferensi-nya seperti apa?"
+3. Jika mahasiswa salah, jangan langsung koreksi. Ajukan pertanyaan yang membuat mereka menemukan ketidakkonsistenan sendiri.
+4. Konteks sampel: sayatan tipis peperite dari Median Tectonic Line, Ehime, Jepang, di bawah XPL. Fitur utama meliputi skeletal magnetite, plagioclase microlites dengan orientasi acak, fragmen sedimen sebagai bukti interaksi magma-sedimen, dan groundmass hyalophitic.
+5. Bahasa: Bahasa Indonesia, nada akademis tapi tidak kaku.
+6. Panjang respons: sedang, tidak terlalu panjang. Fokus pada satu pertanyaan pemandu per respons.`;
+
+  // ── API Key ────────────────────────────────────────────────────────────────
+  const apikeyInput = document.getElementById('apikey');
+  const apiStatus = document.getElementById('api-status');
+
+  apikeyInput.addEventListener('input', () => {
+    const val = apikeyInput.value.trim();
+    if (val.startsWith('sk-ant-') && val.length > 20) {
+      apiStatus.textContent = 'Siap';
+      apiStatus.className = 'api-status ready';
+    } else if (val.length > 0) {
+      apiStatus.textContent = 'Format tidak valid';
+      apiStatus.className = 'api-status';
+    } else {
+      apiStatus.textContent = 'Belum dikonfigurasi';
+      apiStatus.className = 'api-status';
+    }
+  });
+
+  function getApiKey() { return apikeyInput.value.trim(); }
+
+  // ── Chat logic ─────────────────────────────────────────────────────────────
+  function insertFeature(text) {
+    document.getElementById('user-input').value = text;
+    autoResize(document.getElementById('user-input'));
+    document.getElementById('user-input').focus();
+  }
+
+  function useStarter(btn) {
+    document.getElementById('user-input').value = btn.textContent;
+    autoResize(document.getElementById('user-input'));
+    sendMessage();
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  }
+
+  function resetChat() {
+    messages = [];
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = `
+      <div class="empty-state" id="empty-state">
+        <span class="empty-state-icon">🔬</span>
+        <p>Pilih salah satu fitur di sebelah kiri untuk memulai, atau ketik observasimu langsung.</p>
+      </div>`;
+    document.getElementById('starters').style.display = 'flex';
+  }
+
+  function appendMessage(role, text) {
+    const empty = document.getElementById('empty-state');
+    if (empty) empty.remove();
+    document.getElementById('starters').style.display = 'none';
+
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+
+    const avatar = role === 'user'
+      ? '<div class="msg-avatar">MW</div>'
+      : '<div class="msg-avatar">🔬</div>';
+
+    const roleLabel = role === 'user' ? 'Mahasiswa' : 'Asisten Petrografi';
+
+    div.innerHTML = `
+      ${avatar}
+      <div class="msg-body">
+        <div class="msg-role">${roleLabel}</div>
+        <div class="msg-text">${text.replace(/\n/g, '<br>')}</div>
+      </div>`;
+
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  function appendTyping() {
+    const empty = document.getElementById('empty-state');
+    if (empty) empty.remove();
+
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg ai';
+    div.id = 'typing';
+    div.innerHTML = `
+      <div class="msg-avatar">🔬</div>
+      <div class="msg-body">
+        <div class="msg-role">Asisten Petrografi</div>
+        <div class="msg-text">
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    if (!text || isLoading) return;
+
+    const apiKey = getApiKey();
+    if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+      appendMessage('ai', '⚠️ Masukkan Anthropic API key yang valid di bagian atas halaman terlebih dahulu.');
+      return;
+    }
+
+    input.value = '';
+    input.style.height = 'auto';
+    isLoading = true;
+
+    document.getElementById('send-btn').disabled = true;
+    appendMessage('user', text);
+    messages.push({ role: 'user', content: text });
+
+    const typingEl = appendTyping();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 600,
+          system: SYSTEM_PROMPT,
+          messages: messages
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || '(Tidak ada respons)';
+
+      typingEl.remove();
+      appendMessage('ai', reply);
+      messages.push({ role: 'assistant', content: reply });
+
+    } catch (err) {
+      typingEl.remove();
+      const container = document.getElementById('chat-messages');
+      const errDiv = document.createElement('div');
+      errDiv.className = 'error-msg';
+      errDiv.textContent = `Error: ${err.message}`;
+      container.appendChild(errDiv);
+      container.scrollTop = container.scrollHeight;
+      messages.pop();
+    } finally {
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+      input.focus();
+    }
+  }
+</script>
+</body>
+</html>
